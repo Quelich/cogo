@@ -26,8 +26,10 @@ func main() {
 	elapsedTime := time.Since(startTime)
 
 	// print results
-	fmt.Printf("Elapsed Time:%d ns\n ", elapsedTime.Nanoseconds())
-	fmt.Println(matchedIndices)
+
+	fmt.Println("Matched Indices: ")
+	fmt.Print(matchedIndices)
+	fmt.Printf("\nElapsed Time:%d ns\n ", elapsedTime.Nanoseconds())
 }
 
 func concurrentOp(lines []string, keyword string) {
