@@ -1,3 +1,4 @@
+//TODO: split lines and use threads
 package main
 
 import (
@@ -5,6 +6,7 @@ import (
 	"log"
 	"os"
 	"bufio"
+	"strings"
 )
 
 func main() {
@@ -13,7 +15,11 @@ func main() {
 	//keyword := "love";
 	fileName := "test.txt"
 	fcontent := readFile(fileName)
-	printFileRanged(fcontent, 0, 10)
+	keyword := "love"
+	//printFileRanged(fcontent, 0, 10)
+	matchedIndices := findMatchedLines(fcontent, keyword)
+	fmt.Println("Matched Indices:")
+	fmt.Println(matchedIndices)
 	// read file
 	// find the keywords
 	// list the keywords
@@ -28,16 +34,17 @@ func readFile(fname string) []string {
 	}
 
 	Scanner := bufio.NewScanner(file)
-	Scanner.Split(bufio.ScanWords)
+	Scanner.Split(bufio.ScanLines)
 	
-	var words []string
+	var lines []string
 	
 	for Scanner.Scan() {
-		words = append(words, Scanner.Text())
+		lines = append(lines, Scanner.Text())
 	}
 
-	return words
+	return lines
 }
+
 
 func printFile(fcontent []string) {
 	
@@ -49,4 +56,18 @@ func printFileRanged(words []string, from int, to int) {
 		word := words[i]
 		fmt.Println(word)
 	}
+}
+
+func findMatchedLines(lines []string, keyword string) []int {
+	
+	var lineIndices []int
+
+	for i := 0; i < len(lines) ; i++ {
+		line := lines[i]
+		if  strings.Contains(line, keyword){
+			lineIndices = append(lineIndices, i + 1) // line indices start from one
+		}
+	}
+
+	return lineIndices
 }
