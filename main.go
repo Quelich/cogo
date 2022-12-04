@@ -10,64 +10,43 @@ import (
 )
 
 var threadCount int = 4
-var complementWord string = "xxx"
+var complementWord string = " "
+var matchedIndices []int
 
 func main() {
 
 	fileName := "test1.txt"
-	//keyword := "love"
+	keyword := "love"
 
-	// startTime := time.Now()
-	// fcontent := readFileByLines(fileName)
-	// matchedIndices := findMatchedLinesIndex(fcontent, keyword)
-	// elapsedTime := time.Since(startTime)
-
+	lines := readFileByLines(fileName)
+	// Calculate elapsed time
 	startTime := time.Now()
-	words := readFileByWords(fileName)
-	slices := makeSlices(words)
-	fmt.Println("---------------------")
-	for i := 0; i < len(slices); i++ {
-
-		fmt.Println(slices[i])
-		fmt.Println("---------------------")
-	}
+	concurrentOperation(lines, keyword)
 	elapsedTime := time.Since(startTime)
 
 	// print results
-	fmt.Println("Matched Indices:")
-	//fmt.Println(matchedIndices)
-	fmt.Printf("Elapsed Time:%d\n ns", elapsedTime.Nanoseconds())
+	fmt.Printf("Elapsed Time:%d ns\n ", elapsedTime.Nanoseconds())
+	
 }
 
-// Data segmentation for threads
-func makeSlices(words []string) [][]string {
-	wordsLen := len(words)
-	fmt.Printf("Words Length:%d\n", wordsLen)
-	startIdx := 0
-
-	/*
-	   If the words lengh is odd,
-	   add one more word to make it even
-	   for convenience in calculations
-	*/
-
-	if wordsLen%2 != 0 {
-		words = append(words, complementWord)
-		wordsLen += 1
+func concurrentOperation(lines []string, keyword string) {
+	linesLen := len(lines)
+	
+	// Make the line length even
+	if linesLen%2 != 0 { 
+		lines = append(lines, complementWord)
+		linesLen += 1
 	}
 
-	offset := wordsLen / threadCount
+	offset := linesLen / threadCount
+	startIdx := 0
 	endIndx := offset
-	var slices [][]string
 
 	for i := 0; i < threadCount; i++ {
-		fmt.Printf("Start: %d - Offset:%d\n", startIdx, endIndx)
-		slice := sliceWords(words, startIdx, endIndx)
-		slices = append(slices, slice)
+		go getMatchedLinesIndices(keyword, lines, startIdx, endIndx)
 		startIdx += offset
 		endIndx += offset
 	}
-	return slices
 }
 
 // Read file content line by line
@@ -86,32 +65,8 @@ func readFileByLines(fname string) []string {
 	return lines
 }
 
-func readFileByWords(fname string) []string {
-
-	file, err := os.Open(fname)
-	if err != nil {
-		log.Fatal("Error opening file", err)
-	}
-	Scanner := bufio.NewScanner(file)
-	Scanner.Split(bufio.ScanWords)
-	var words []string
-	for Scanner.Scan() {
-		words = append(words, Scanner.Text())
-	}
-	return words
-}
-
-func sliceWords(words []string, from int, to int) []string {
-	var slice []string
-	for i := from; i < to; i++ {
-		word := words[i]
-		slice = append(slice, word)
-	}
-	return slice
-}
-
 // Find the indices of matched lines
-func findMatchedLinesIndex(keyword string, lines []string, from int, to int) []int {
+func getMatchedLinesIndices(keyword string, lines []string, from int, to int) []int {
 	var lineIndices []int
 	for i := from; i < to; i++ {
 		line := lines[i]
@@ -119,5 +74,7 @@ func findMatchedLinesIndex(keyword string, lines []string, from int, to int) []i
 			lineIndices = append(lineIndices, i+1) // line indices start from one
 		}
 	}
+	fmt.Println(lineIndices)
+	//matchedIndices = append(matchedIndices, lineIndices...)
 	return lineIndices
 }
