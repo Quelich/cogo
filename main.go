@@ -21,10 +21,8 @@ func main() {
 
 	lines := readFileByLines(fileName)
 	// CONCURRENT OPERATION
-	concurrentOp(lines, keyword)
-	// Calculate elapsed time
 	startTime := time.Now()
-
+	concurrentOp(lines, keyword)
 	elapsedTime := time.Since(startTime)
 
 	// print results
@@ -47,17 +45,17 @@ func concurrentOp(lines []string, keyword string) {
 	startIdx := 0
 	endIndx := offset
 
-	for i := 0; i < threadCount; i++ {
-		fmt.Printf("StartIdx: %d - EndIdx: %d\n", startIdx, endIndx)
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+	go func() {
+		for i := 0; i < threadCount; i++ {
+			//fmt.Printf("StartIdx: %d - EndIdx: %d\n", startIdx, endIndx)
+			wg.Add(1)
 			getMatchedLinesIndices(keyword, lines, startIdx, endIndx)
+			startIdx += offset
+			endIndx += offset
+		}
 
-		}()
-		startIdx += offset
-		endIndx += offset
-	}
+		defer wg.Done()
+	}()
 	wg.Wait()
 }
 
@@ -81,11 +79,11 @@ func getMatchedLinesIndices(keyword string, lines []string, from int, to int) []
 	var lineIndices []int
 	for i := from; i < to; i++ {
 		line := lines[i]
-		if strings.Contains(line, keyword) {
+		formattedLine := strings.ToLower(line)
+		if strings.Contains(formattedLine, keyword) {
 			lineIndices = append(lineIndices, i+1) // line indices start from one
 		}
 	}
-	fmt.Println(lineIndices)
 	matchedIndices = append(matchedIndices, lineIndices...)
 	return lineIndices
 }
